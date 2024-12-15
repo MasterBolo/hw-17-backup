@@ -6,7 +6,7 @@
 
 	Что нужно сделать?
 
-	1. Настроить стенд Vagrant с двумя виртуальными машинами: backupsrv и client. 
+    1. Настроить стенд Vagrant с двумя виртуальными машинами: backupsrv и client. 
     2. Настроить удаленный бэкап каталога /etc c сервера client при помощи borgbackup.
 	
 	Резервные копии должны соответствовать следующим критериям:
@@ -34,6 +34,7 @@
 
 	Для правильной работы с логами необходимо настроить время. Мой часовой пояс - Asia/Yekaterinburg. 
  Cоздадим задачу настройки тайм-зоны:
+ 
 ```
 tasks: 
     - name: set timezone to Asia/Yekaterinburg
@@ -71,7 +72,8 @@ tasks:
         fstype: ext4
         state: mounted
 ```
-	Обновлем кэш для apt, инсталируем borgbackup :
+Обновлем кэш для apt, инсталируем borgbackup :
+ 
 ````
     - name: update
       apt:
@@ -86,7 +88,7 @@ tasks:
       tags:
         - borgbackup-package
 ````
-	Создадим пользователя borg, владельца для директории /var/backup, директорию .ssh :
+Создадим пользователя borg, владельца для директории /var/backup, директорию .ssh :
 
 ```
 - name: Create user borg
@@ -110,7 +112,8 @@ tasks:
         state=directory
 
 ```
-	Создаём фаил "authorized_keys" c владельцем borg, копируем в него созданный заранее публичный ключ сервера client :
+Создаём фаил "authorized_keys" c владельцем borg, копируем в него созданный заранее публичный ключ сервера client :
+
 ````
 - name: create file
       file:
@@ -136,9 +139,10 @@ tasks:
 
 # Настраиваем сервер client
 
-	Создаём фаил client.yml и дополняем его tasks(задачами).
+Создаём фаил client.yml и дополняем его tasks(задачами).
 
-	Cоздадим задачу настройки тайм-зоны:
+Cоздадим задачу настройки тайм-зоны:
+
 ```
 tasks: 
     - name: set timezone to Asia/Yekaterinburg
@@ -146,7 +150,8 @@ tasks:
         name: Asia/Yekaterinburg
 
 ````	
-	Обновлем кэш для apt, инсталируем borgbackup :
+Обновлем кэш для apt, инсталируем borgbackup :
+
 ````
     - name: update
       apt:
@@ -161,7 +166,8 @@ tasks:
       tags:
         - borgbackup-package
 ````	
-	Копируем на сервер созданные ранее публичный и приватный ключи:
+Копируем на сервер созданные ранее публичный и приватный ключи:
+
 ````
     - name: copy public key
       ansible.builtin.template:
@@ -174,7 +180,8 @@ tasks:
         dest: /root/.ssh/id_rsa
         mode: '0600'
 ````
-	Настрайваем конфигурацию для автоматического приёма ключей:
+Настрайваем конфигурацию для автоматического приёма ключей:
+
 ````
     - name: disable StrictHostKeyChecking
       ansible.builtin.lineinfile:
@@ -182,7 +189,8 @@ tasks:
         regexp: 'StrictHostKeyChecking'
         line: StrictHostKeyChecking no
 ````
-	Инициализируем репозиторий borg на backup сервере с client сервера::
+Инициализируем репозиторий borg на backup сервере с client сервера:
+
 ````
      - name: initialize borg repository
        ansible.builtin.expect: 
@@ -195,7 +203,7 @@ tasks:
            "Do you want your passphrase to be displayed for verification?":
              - "N"
 ````
-	Создаём файлы конфигураций для сервиса и таймера borg, копируя файлы с листингом предоставленным в методичке :
+Создаём файлы конфигураций для сервиса и таймера borg, копируя файлы с листингом предоставленным в методичке :
 
 ````
     - name: create systemd service for backup
@@ -208,7 +216,7 @@ tasks:
        src: files/borg-backup.timer
        dest: /etc/systemd/system/borg-backup.timer
 ````
-	 Включаем и стартуем созданные ранее сервисы:
+Включаем и стартуем созданные ранее сервисы:
 
 ````
     - name: enable borg-backup.timer
